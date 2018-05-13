@@ -8,8 +8,10 @@ class Database {
 
 	public function __construct(String $host, String $user, String $pass, String $name) {
 		try {
+			// Try to create PDO instance and establish database connection.
 			$this->PDO = new \PDO("mysql:host=" . $host . ";dbname=" . $name, $user, $pass);
 		} catch (PDOException $ex) {
+			// Catch the PDOException should connection fail to establish.
 			error_log("PDOException: " . $ex->getMessage());
 		}
 	}
@@ -20,15 +22,20 @@ class Database {
 		if(!$this->PDO instanceof \PDO)
 			return;
 
+		// String variable to hold fields for the query.
 		$query_fields = "";
+		// Integer variable for loop iteration counter.
 		$q = 1;
 		// Loop through all fields in array.
 		foreach ($fields as $field) {
+			// Add the current fild to the query string variable.
 			$query_fields .= $field;
 
+			// Check if not last iteration and add separator to query variable.
 			if($q < count($fields))
 				$query_fields .= ", ";
 
+			// Increment iteration counter.
 			$q++;
 		}
 
@@ -56,6 +63,7 @@ class Database {
 				if($w < count($where))
 					$where_query .= " AND ";
 
+				// Increment iteration counter.
 				$w++;
 			}
 
@@ -74,12 +82,10 @@ class Database {
 
 		// Check if query returned any results and return them.
 		if($query->rowCount() > 0) {
-			error_log($query->rowCount() . " results returned by SELECT query.");
 			return $query->fetchAll(\PDO::FETCH_ASSOC);
 		}
 		// Otherwise return empty array.
 		else {
-			error_log("No results returned by SELECT query.");
 			return [];
 		}
 	}
