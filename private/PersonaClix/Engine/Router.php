@@ -6,23 +6,43 @@ class Router {
 
 	private static $routes = [];
 
-	public static function register(String $method, String $route, callable $action) {
+	public static function register(String $method, String $route, callable $action, array $options = []) {
+		// Ensure the provided method is in uppercase
 		$method = strtoupper($method);
+		// Check if provided method is nether GET or POST and change to GET.
 		if($method != "GET" && $method != "POST")
 			$method = "GET";
 
-		if(!array_key_exists($method, Router::$routes))
-			Router::$routes[$method] = [];
-		Router::$routes[$method][$route] = $action;
+		// Register the route parameters
+		Router::$routes[] = [
+			'method' => $method,  // The request method GET or POST
+			'route' => $route,    // The route e.g. /something
+			'action' => $action,  // The callable action
+			'options' => $options // Additional optional options
+		];
 	}
 
 	public static function route() {
-		$method = $_SERVER['REQUEST_METHOD'];
-		$route = $_SERVER['REQUEST_URI'];
+		// Variable for the requested method
+		$request_method = $_SERVER['REQUEST_METHOD'];
+		// Variable for the requested route/URI
+		$request_route = $_SERVER['REQUEST_URI'];
+		// Variable for the requested hostname
+		$http_host = $_SERVER['HTTP_HOST'];
 
-		if(array_key_exists($method, Router::$routes)) {
-			if(array_key_exists($route, Router::$routes[$method])) {
-				return Router::$routes[$method][$route];
+		// Loop through all routes
+		foreach (Router::$routes as $route) {
+			// Check that the parameters of the current route iteration match the requested method and requested route
+			if($route['method'] == $request_method && $route['route'] == $request_route) {
+				// Check if the route has a specific host registered within its additional options and match against the requested host.
+				if(!empty($route['options']) && array_key_exists('host', $route['options']) && $route['options']['host'] == $http_host) {
+					// Return the callable action for that route.
+					return $route['action'];
+				// Otherwise check if either no addional options or no host option was registered.
+				} else if(empty($route['options']) || !array_key_exists('host', $route['options'])) {
+					// Return the callable action for that route.
+					return $route['action'];
+				}
 			}
 		}
 	}
