@@ -35,9 +35,19 @@ class Router {
 			// Check that the parameters of the current route iteration match the requested method and requested route
 			if($route['method'] == $request_method && $route['route'] == $request_route) {
 				// Check if the route has a specific host registered within its additional options and match against the requested host.
-				if(!empty($route['options']) && array_key_exists('host', $route['options']) && $route['options']['host'] == $http_host) {
+				if(!empty($route['options']) && array_key_exists('host', $route['options']) && is_string($route['options']['host']) && strtolower($route['options']['host']) == $http_host) {
 					// Return the callable action for that route.
 					return $route['action'];
+				// If not, then check the route has an array of hostnames registered within its additional options
+				} else if(!empty($route['options']) && array_key_exists('host', $route['options']) && is_array($route['options']['host'])) {
+					// Loop through the hostnames
+					foreach ($route['options']['host'] as $host) {
+						// Check whether the hostname in the current loop iteration matches the requested hostname
+						if($http_host == strtolower($host)) {
+							// Return the callable action for that route.
+							return $route['action'];
+						}
+					}
 				// Otherwise check if either no addional options or no host option was registered.
 				} else if(empty($route['options']) || !array_key_exists('host', $route['options'])) {
 					// Return the callable action for that route.
