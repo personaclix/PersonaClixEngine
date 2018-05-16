@@ -13,6 +13,20 @@ class Router {
 		if($method != "GET" && $method != "POST")
 			$method = "GET";
 
+		// Fix for single hostname registered not completely in lowercase.
+		if(!empty($options) && array_key_exists('host', $options) && is_string($options['host'])) {
+			// Convert hostname to all lowercase.
+			$options['host'] = strtolower($options['host']);
+		}
+		// Fix for multiple hostnames registered not completely in lowercase.
+		if(!empty($options) && array_key_exists('host', $options) && is_array($options['host'])) {
+			// Loop through all hostnames
+			foreach ($options['host'] as $h => $host) {
+				// Convert hostname to all lowercase
+				$options['host'][$h] = strtolower($host);
+			}
+		}
+
 		// Register the route parameters
 		Router::$routes[] = [
 			'method' => $method,  // The request method GET or POST
@@ -35,7 +49,7 @@ class Router {
 			// Check that the parameters of the current route iteration match the requested method and requested route
 			if($route['method'] == $request_method && $route['route'] == $request_route) {
 				// Check if the route has a specific host registered within its additional options and match against the requested host.
-				if(!empty($route['options']) && array_key_exists('host', $route['options']) && is_string($route['options']['host']) && strtolower($route['options']['host']) == $http_host) {
+				if(!empty($route['options']) && array_key_exists('host', $route['options']) && is_string($route['options']['host']) && $route['options']['host'] == $http_host) {
 					// Return the callable action for that route.
 					return $route['action'];
 				// If not, then check the route has an array of hostnames registered within its additional options
@@ -43,7 +57,7 @@ class Router {
 					// Loop through the hostnames
 					foreach ($route['options']['host'] as $host) {
 						// Check whether the hostname in the current loop iteration matches the requested hostname
-						if($http_host == strtolower($host)) {
+						if($http_host == $host) {
 							// Return the callable action for that route.
 							return $route['action'];
 						}
