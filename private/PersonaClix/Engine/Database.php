@@ -19,8 +19,8 @@ class Database {
 			$name = $params[3];
 			$port = $params[4];
 
-			// Check that host, user, pass, and name are strings and port is an integer.
-			if(is_string($host) && is_string($user) && is_string($pass) && is_string($name) && is_int($port)) {
+			// Check that host, user, pass, and name are strings and port is either a string or an integer.
+			if(is_string($host) && is_string($user) && is_string($pass) && is_string($name) && (is_int($port) || is_string($port))) {
 				try {
 					// Try to create PDO instance and establish database connection.
 					$this->PDO = new \PDO("mysql:host=" . $host . ";dbname=" . $name . ";port=" . $port, $user, $pass);
