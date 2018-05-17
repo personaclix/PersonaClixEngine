@@ -6,32 +6,29 @@ class Database {
 
 	private $PDO = null;
 
-	public function __construct(String $host, String $user, String $pass, String $name, int $port = 3306, String $driver = "mysql") {
-		// Check if specified driver is not available
-		if(!in_array($driver, \PDO::getAvailableDrivers(), TRUE)) {
-			error_log("Database::__construct = Specified database driver (" . $driver . ") is not available.");
-			
-			// Loop through all available drivers and list them in the log.
-			$drivers = "";
-			$d = 1;
-			foreach (\PDO::getAvailableDrivers() as $driver) {
-				$drivers .= $driver;
+	public function __construct() {
+		// Fetch all parameters/arguments passed
+		$params = func_get_args();
 
-				if($d < count(\PDO::getAvailableDrivers()))
-					$drivers .= ", ";
+		// Check if we have at least 5 parameters
+		if(count($params) > 5) {
+			// Save them to variables for convenience later.
+			$host = $params[0];
+			$user = $params[1];
+			$pass = $params[2];
+			$name = $params[3];
+			$port = $params[4];
 
-				$d++;
+			// Check that host, user, pass, and name are strings and port is an integer.
+			if(is_string($host) && is_string($user) && is_string($pass) && is_string($name) && is_int($port)) {
+				try {
+					// Try to create PDO instance and establish database connection.
+					$this->PDO = new \PDO("mysql:host=" . $host . ";dbname=" . $name . ";port=" . $port, $user, $pass);
+				} catch (\PDOException $ex) {
+					// Catch the PDOException should connection fail to establish.
+					error_log("PDOException: " . $ex->getMessage());
+				}
 			}
-			error_log("Available database drivers: " . $drivers);
-			exit;
-		}
-
-		try {
-			// Try to create PDO instance and establish database connection.
-			$this->PDO = new \PDO($driver . ":host=" . $host . ";dbname=" . $name . ";port=" . $port, $user, $pass);
-		} catch (PDOException $ex) {
-			// Catch the PDOException should connection fail to establish.
-			error_log("PDOException: " . $ex->getMessage());
 		}
 	}
 
