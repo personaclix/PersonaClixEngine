@@ -64,6 +64,23 @@ class Router {
 
 		// Check if route info was returned in the form of an array.
 		if(is_array($route)) {
+			// Check if a hostname has been specified
+			if(array_key_exists("host", $route['options'])) {
+				// Check if a string and return the route with the hostname included
+				if(is_string($route['options']['host'])) {
+					// Do we have an HTTPS connection?
+					if(isset($_SERVER['HTTPS']))
+						return "https://" . $route['options']['host'] . $route['route'];
+					return "http://" . $route['options']['host'] . $route['route'];
+				}
+				// Check if an array of hostnames and return the route with the first hostname included
+				else if(is_array($route['options']['host'])) {
+					// Do we have an HTTPS connection?
+					if(isset($_SERVER['HTTPS']))
+						return "https://" . $route['options']['host'][0] . $route['route'];
+					return "http://" . $route['options']['host'][0] . $route['route'];
+				}
+			}
 			// Return the route.
 			return $route['route'];
 		}
