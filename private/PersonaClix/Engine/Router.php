@@ -41,7 +41,7 @@ class Router {
 	 *	Returns an array with route info if match is found, or empty string otherwise.
 	 *	@return array|String
 	 */
-	public static function getInfo(String $name) {
+	public static function getRouteInfo(String $name) {
 		// Loop through all routes
 		foreach (Router::$routes as $route) {
 			// Check that a name option is specified and that it matches the requested name
@@ -58,9 +58,9 @@ class Router {
 	 *	Returns the route as a string if found (e.g. /something) or empty string otherwise.
 	 *	@return String
 	 */
-	public static function getRoute(String $name) {
+	public static function getRouteURL(String $name) {
 		// Get route info
-		$route = Router::getInfo($name);
+		$route = Router::getRouteInfo($name);
 
 		// Check if route info was returned in the form of an array.
 		if(is_array($route)) {
@@ -81,8 +81,14 @@ class Router {
 					return "http://" . $route['options']['host'][0] . $route['route'];
 				}
 			}
-			// Return the route.
-			return $route['route'];
+
+			// No custom hostname specified.
+			// Do we have an HTTPS connection?
+			if(isset($_SERVER['HTTPS']))
+				// Return an HTTPS URL.
+				return "https://" . $_SERVER['HTTP_HOST'] . $route['route'];
+			// Return an HTTP URL.
+			return "http://" . $_SERVER['HTTP_HOST'] . $route['route'];
 		}
 		return "";
 	}
