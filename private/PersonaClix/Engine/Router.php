@@ -36,6 +36,40 @@ class Router {
 		];
 	}
 
+	/**
+	 *	Get route info by name. (Only works for routes that have the name option specified)
+	 *	Returns an array with route info if match is found, or empty string otherwise.
+	 *	@return array|String
+	 */
+	public static function getInfo(String $name) {
+		// Loop through all routes
+		foreach (Router::$routes as $route) {
+			// Check that a name option is specified and that it matches the requested name
+			if(array_key_exists("name", $route['options']) && $route['options']['name'] == $name) {
+				// Return the route info
+				return $route;
+			}
+		}
+		return "";
+	}
+
+	/**
+	 *	Get route by name. (Only works for routes that have the name option specified)
+	 *	Returns the route as a string if found (e.g. /something) or empty string otherwise.
+	 *	@return String
+	 */
+	public static function getRoute(String $name) {
+		// Get route info
+		$route = Router::getInfo($name);
+
+		// Check if route info was returned in the form of an array.
+		if(is_array($route)) {
+			// Return the route.
+			return $route['route'];
+		}
+		return "";
+	}
+
 	public static function route() {
 		// Variable for the requested method
 		$request_method = $_SERVER['REQUEST_METHOD'];
