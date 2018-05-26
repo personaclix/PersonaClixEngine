@@ -10,14 +10,19 @@ class Database {
 		// Fetch all parameters/arguments passed
 		$params = func_get_args();
 
-		// Check if we have at least 5 parameters
-		if(count($params) > 5) {
+		// Check if we have at least 4 parameters
+		if(count($params) >= 4) {
 			// Save them to variables for convenience later.
 			$host = $params[0];
 			$user = $params[1];
 			$pass = $params[2];
 			$name = $params[3];
-			$port = $params[4];
+
+			// Check for optional 4th parameter to use as port number, and default to 3306 if none.
+			if(isset($params[4]))
+				$port = $params[4];
+			else
+				$port = 3306;
 
 			// Check that host, user, pass, and name are strings and port is either a string or an integer.
 			if(is_string($host) && is_string($user) && is_string($pass) && is_string($name) && (is_int($port) || is_string($port))) {
