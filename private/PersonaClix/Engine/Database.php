@@ -42,6 +42,7 @@ class Database {
 	 *	@param array Fields/Columns to Select
 	 *	@param string Name of the Table to select from
 	 *	@param array (Optional) Where clause to narrow results in the form of Field => Value array.
+	 *	@return array Results Found or Empty Array
 	 */
 	public function select(array $fields, String $table, array $where = []) {
 		// Check if a database connection exists by checking for a valid instance of PDO
@@ -162,6 +163,82 @@ class Database {
 		$query_execution = $query->execute($query_execute);
 		// Return whether the query executed successfully as a boolean.
 		return $query_execution;
+	}
+
+	/**
+	 *	Update a record in the database.
+	 *	@param string Table Name
+	 *	@param array Fields and Values to Update as an Associative Array
+	 *	@param array (Optional) Associative Array with Fields and Values to form a WHERE clause.
+	 *	@return boolean Whether the query executed successfully or not.
+	 */
+	public function update(String $table, array $fields, array $where = []) {
+		// Check if a database connection exists by checking for a valid instance of PDO
+		// If none, just return.
+		if(!$this->PDO instanceof \PDO)
+			return;
+
+		// String variable to hold fields for the query.
+		$query_fields = "";
+		// String variable to hold the execution array of :field => value pairs.
+		$query_execute = [];
+		// Integer variable for loop iteration counter.
+		$q = 1;
+		// Loop through all fields in array.
+		foreach ($fields as $field_name => $field_value) {
+			// Add the current field to the query fields variable.
+			$query_fields .= $field_name . " = :" . $field_name;
+			// Add the current field to the query execution array.
+			$query_execute[':' . $field_name] = $field_value;
+
+			// Check if not last iteration and add separator to variables.
+			if($q < count($fields)) {
+				$query_fields .= ", ";
+			}
+
+			// Increment iteration counter.
+			$q++;
+		}
+
+		// Check for WHERE clause
+		if(!empty($where)) {
+			// WHERE CLAUSE
+
+			// Integer variable for loop iteration counter.
+			$w = 1;
+			// String variable for the query.
+			$where_query = "";
+			// Array variable for execution.
+			$where_execute = [];
+
+			// Loop through the where array.
+			foreach ($where as $wkey => $wval) {
+				// Add current where iteration to the query and execution variables
+				$where_query .= $wkey . " = :" . $wkey;
+				$query_execute[':' . $wkey] = $wval;
+				// Check if not last iteration and add seperator to query variable.
+				if($w < count($where))
+					$where_query .= " AND ";
+
+				// Increment iteration counter.
+				$w++;
+			}
+
+			// Prepare the query for execution.
+			$update_query = $this->PDO->prepare("UPDATE " . $table . " SET " . $query_fields . " WHERE " . $where_query);
+			// Execute the query with the where execution array.
+			$update_execution = $update_query->execute($query_execute);
+		} else {
+			// NO WHERE CLAUSE
+
+			// Prepare the query for execution.
+			$update_query = $this->PDO->prepare("UPDATE " . $table . " SET " . $query_fields);
+			// Execute the query.
+			$update_execution = $update_query->execute();
+		}
+
+		// Return whether the query executed successfully or not.
+		return $update_execution;
 	}
 
 }
