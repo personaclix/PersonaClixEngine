@@ -37,6 +37,12 @@ class Database {
 		}
 	}
 
+	/**
+	 *	Select records from the database.
+	 *	@param array Fields/Columns to Select
+	 *	@param string Name of the Table to select from
+	 *	@param array (Optional) Where clause to narrow results in the form of Field => Value array.
+	 */
 	public function select(array $fields, String $table, array $where = []) {
 		// Check if a database connection exists by checking for a valid instance of PDO
 		// If none, just return.
@@ -109,6 +115,53 @@ class Database {
 		else {
 			return [];
 		}
+	}
+
+	/**
+	 *	Insert a record into the database.
+	 *	@param String Table Name
+	 *	@param array Associative Array of Key => Value pairs for the fields and data to insert.
+	 *	@return boolean Whether query executed successfully or not.
+	 */
+	public function insert(String $table, array $fields) {
+		// Check if a database connection exists by checking for a valid instance of PDO
+		// If none, just return.
+		if(!$this->PDO instanceof \PDO)
+			return;
+
+		// String variable to hold field names for the query.
+		$query_fields = "";
+		// String variable to hold field value tags for the query.
+		$query_field_tags = "";
+		// String variable to hold the execution array of :field => value pairs.
+		$query_execute = [];
+		// Integer variable for loop iteration counter.
+		$q = 1;
+		// Loop through all fields in array.
+		foreach ($fields as $field_name => $field_value) {
+			// Add the current field to the query fields variable.
+			$query_fields .= $field_name;
+			// Add the current field to the query field tags variable.
+			$query_field_tags .= ":" . $field_name;
+			// Add the current field to the query execution array.
+			$query_execute[':' . $field_name] = $field_value;
+
+			// Check if not last iteration and add separator to variables.
+			if($q < count($fields)) {
+				$query_fields .= ", ";
+				$query_field_tags .= ", ";
+			}
+
+			// Increment iteration counter.
+			$q++;
+		}
+
+		// Prepare the insert query for execution.
+		$query = $this->PDO->prepare("INSERT INTO " . $table . "(" . $query_fields . ") VALUES(" . $query_field_tags . ")");
+		// Execute the insert query.
+		$query_execution = $query->execute($query_execute);
+		// Return whether the query executed successfully as a boolean.
+		return $query_execution;
 	}
 
 }
