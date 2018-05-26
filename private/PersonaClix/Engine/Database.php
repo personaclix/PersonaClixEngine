@@ -241,4 +241,51 @@ class Database {
 		return $update_execution;
 	}
 
+	/**
+	 *	Delete a record from the database.
+	 *	@param string Table name.
+	 *	@param array (Optional) Associative Array to form WHERE Clause.
+	 */
+	public function delete(String $table, array $where = []) {
+		// Check for WHERE clause
+		if(!empty($where)) {
+			// WHERE CLAUSE
+
+			// Integer variable for loop iteration counter.
+			$w = 1;
+			// String variable for the query.
+			$where_query = "";
+			// Array variable for execution.
+			$where_execute = [];
+
+			// Loop through the where array.
+			foreach ($where as $wkey => $wval) {
+				// Add current where iteration to the query and execution variables
+				$where_query .= $wkey . " = :" . $wkey;
+				$where_execute[':' . $wkey] = $wval;
+				// Check if not last iteration and add seperator to query variable.
+				if($w < count($where))
+					$where_query .= " AND ";
+
+				// Increment iteration counter.
+				$w++;
+			}
+
+			// Prepare the query for execution.
+			$delete_query = $this->PDO->prepare("DELETE FROM " . $table . " WHERE " . $where_query);
+			// Execute the query with the where execution array.
+			$delete_execution = $delete_query->execute($where_execute);
+		} else {
+			// NO WHERE CLAUSE
+
+			// Prepare the query for execution.
+			$delete_query = $this->PDO->prepare("TRUNCATE TABLE " . $table);
+			// Execute the query.
+			$delete_execution = $delete_query->execute();
+		}
+
+		// Return whether the query executed successfully or not.
+		return $delete_execution;
+	}
+
 }
