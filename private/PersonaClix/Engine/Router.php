@@ -97,7 +97,7 @@ class Router {
 		// Variable for the requested method
 		$request_method = $_SERVER['REQUEST_METHOD'];
 		// Variable for the requested route/URI
-		$request_route = $_SERVER['REQUEST_URI'];
+		$request_route = explode('?', $_SERVER['REQUEST_URI'])[0];
 		// Variable for the requested hostname
 		$http_host = $_SERVER['HTTP_HOST'];
 
