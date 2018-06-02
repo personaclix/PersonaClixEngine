@@ -2,6 +2,8 @@
 
 namespace PersonaClix\Engine;
 
+use \PersonaClix\Engine\Helpers\Request;
+
 class Router {
 
 	private static $routes = [];
@@ -39,18 +41,22 @@ class Router {
 	/**
 	 *	Get route info by name. (Only works for routes that have the name option specified)
 	 *	Returns an array with route info if match is found, or empty string otherwise.
-	 *	@return array|String
+	 *	@return array
 	 */
-	public static function getRouteInfo(String $name) {
+	public static function getRouteInfo(String $name = "") {
 		// Loop through all routes
 		foreach (Router::$routes as $route) {
-			// Check that a name option is specified and that it matches the requested name
+			// Check that a name option is specified in the route and that it matches the requested name
 			if(array_key_exists("name", $route['options']) && $route['options']['name'] == $name) {
 				// Return the route info
 				return $route;
+			// No name was provided, attempt to find the current route based on its URI.
+			} else if(!$name && $route['route'] == Request::uri()) {
+				// Route found, return the route info.
+				return $route;
 			}
 		}
-		return "";
+		return [];
 	}
 
 	/**
