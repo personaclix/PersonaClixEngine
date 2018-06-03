@@ -44,19 +44,44 @@ class Router {
 	 *	@return array
 	 */
 	public static function getRouteInfo(String $name = "") {
-		// Loop through all routes
+		// FIND ROUTE BASED ON PROVIDED NAME
+		// Check if a named route is requested.
+		if( $name ) {
+			// A named route is requested.
+			// Loop through all routes till we find one that matches the name.
+			foreach (Router::$routes as $route) {
+				// Check if the route has a name registered and that it matches the requested name.
+				if( array_key_exists('name', $route['options']) && $route['options']['name'] == $name ) {
+					// Return the route info.
+					return $route;
+				}
+			}
+		}
+
+		// FIND CURRENT ROUTE BASED ON HOSTNAME AND URI
+		// Loop through all routes.
 		foreach (Router::$routes as $route) {
-			// Check that a name option is specified in the route and that it matches the requested name
-			if(array_key_exists("name", $route['options']) && $route['options']['name'] == $name) {
-				// Return the route info
-				return $route;
-			// No name was provided, attempt to find the current route based on its URI.
-			} else if(!$name && $route['route'] == Request::uri()) {
-				// Route found, return the route info.
+			// Match the route to the current URI
+			if( $route['route'] == Request::uri() ) {
+				// Check if a host option was registered, is a string, and matches the current host.
+				if( array_key_exists('host', $route['options']) && is_string( $route['options']['host'] ) && $route['options']['host'] == Request::host() )
+					// Return the route info.
+					return $route;
+				// Check if a host option was registered, is an array, and contains the current host.
+				else if( array_key_exists('host', $route['options']) && is_array( $route['options']['host'] ) && in_array( Request::host(), $route['options']['host'] ) )
+					// Return the route info.
+					return $route;
+			}
+		}
+
+		// FIND CURRENT ROUTE BASED ON URI
+		// Loop through all routes.
+		foreach (Router::$routes as $route) {
+			// Match route to current URI
+			if( $route['route'] == Request::uri() ) {
 				return $route;
 			}
 		}
-		return [];
 	}
 
 	/**
@@ -133,31 +158,31 @@ class Router {
 		// Variable for the requested route/URI
 		$request_route = explode('?', $_SERVER['REQUEST_URI'])[0];
 		// Variable for the requested hostname
-		$http_host = $_SERVER['HTTP_HOST'];
-
-		// Loop through all routes
+		$http_host = Request::host();
+		
+		// MATCH ROUTE AGAINST METHOD, HOST, and URI
+		// Loop through all routes.
 		foreach (Router::$routes as $route) {
-			// Check that the parameters of the current route iteration match the requested method and requested route
+			// Check that the parameters of the current route iteration match the requested method and route.
 			if($route['method'] == $request_method && $route['route'] == $request_route) {
 				// Check if the route has a specific host registered within its additional options and match against the requested host.
-				if(!empty($route['options']) && array_key_exists('host', $route['options']) && is_string($route['options']['host']) && $route['options']['host'] == $http_host) {
+				if( array_key_exists('host', $route['options']) && is_string($route['options']['host']) && $route['options']['host'] == $http_host ) {
 					// Return the callable action for that route.
 					return $route['action'];
-				// If not, then check the route has an array of hostnames registered within its additional options
-				} else if(!empty($route['options']) && array_key_exists('host', $route['options']) && is_array($route['options']['host'])) {
-					// Loop through the hostnames
-					foreach ($route['options']['host'] as $host) {
-						// Check whether the hostname in the current loop iteration matches the requested hostname
-						if($http_host == $host) {
-							// Return the callable action for that route.
-							return $route['action'];
-						}
-					}
-				// Otherwise check if either no addional options or no host option was registered.
-				} else if(empty($route['options']) || !array_key_exists('host', $route['options'])) {
+				// Check if the route has an array of specific hosts registered within its additional options and match against the requested host.
+				} else if( array_key_exists( 'host', $route['options'] ) && is_array( $route['options']['host'] ) && in_array( $http_host, $route['options']['host'] ) ) {
 					// Return the callable action for that route.
 					return $route['action'];
 				}
+			}
+		}
+
+		// MATCH ROUTE AGAINST METHOD AND URI
+		// Loop through all routes.
+		foreach (Router::$routes as $route) {
+			// Check that the parameters of the current route iteration match the requested method and route.
+			if($route['method'] == $request_method && $route['route'] == $request_route) {
+				return $route['action'];
 			}
 		}
 	}
