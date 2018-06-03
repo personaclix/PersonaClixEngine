@@ -99,6 +99,34 @@ class Router {
 		return "";
 	}
 
+	/**
+	 *	Retrieves an option registered with a route or otherwise an empty string.
+	 *	Options with arrays as values will return only the first element of that array.
+	 *	@param String The option to retrieve.
+	 *	@param String (Optional) Name of route to retrieve from. Defaults to current route.
+	 *	@return String
+	 */
+	public static function getRouteOption(String $option, String $name = "") {
+		// Get route info.
+		$info = Router::getRouteInfo($name);
+
+		// Check if option has been set.
+		if( array_key_exists( $option, $info['options'] ) ) {
+			// Check if the route option is an array with elements.
+			if( is_array( $info['options'][$option] ) && count( $info['options'][$option] ) > 0 ) {
+				// Return only the first element of the array.
+				return $info['options'][$option][0];
+			// Otherwise the route option is probably a string.
+			} else {
+				// Return the value of the route option.
+				return $info['options'][$option];
+			}
+		}
+
+		// Return empty string as fallback value.
+		return "";
+	}
+
 	public static function route() {
 		// Variable for the requested method
 		$request_method = $_SERVER['REQUEST_METHOD'];
