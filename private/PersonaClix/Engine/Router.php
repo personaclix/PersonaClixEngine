@@ -181,7 +181,8 @@ class Router {
 		// Loop through all routes.
 		foreach (Router::$routes as $route) {
 			// Check that the parameters of the current route iteration match the requested method and route.
-			if($route['method'] == $request_method && $route['route'] == $request_route) {
+			// Since a match against the host failed above, we should ensure there is no host specified with the route.
+			if($route['method'] == $request_method && $route['route'] == $request_route && (!isset($route['options']) || !isset($route['options']['host']))) {
 				return $route['action'];
 			}
 		}
